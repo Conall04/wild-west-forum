@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <title>{{title}}</title>
+</head>
+<body>
+  {{> header}}
+
+  <main>
+    <h1>{{title}}</h1>
+    <p>{{message}}</p>
+
+    <p><a href="/comment/new">Write a new comment →</a></p>
+    <hr>
+
+    {{#if comments.length}}
+      {{#each comments}}
+        <article class="comment">
+          <p><strong>{{author}}</strong> — <em>{{createdAt}}</em></p>
+          <p>{{text}}</p>
+        </article>
+        <hr>
+      {{/each}}
+    {{else}}
+      <p>No comments yet.</p>
+    {{/if}}
+  </main>
+
+  {{> footer}}
+</body>
+</html>

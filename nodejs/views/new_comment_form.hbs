@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <title>New Comment</title>
+</head>
+<body>
+  {{> header}}
+
+  <main>
+    <h1>New Comment</h1>
+
+    <form action="/comment" method="POST" class="comment-form">
+
+      <label>
+        Comment
+        <textarea name="text" rows="4" required></textarea>
+      </label>
+
+      <button type="submit">Post</button>
+      <a href="/comments">Cancel</a>
+    </form>
+  </main>
+
+  {{> footer}}
+</body>
+</html>

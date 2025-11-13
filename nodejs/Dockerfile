@@ -12,6 +12,8 @@ RUN npm i
 
 # Copy the rest of the application code
 COPY . .
+COPY public ./public
+
 
 # Create a non-root user for security
 # groupadd creates a new group called 'nodejs' with group ID 1001
