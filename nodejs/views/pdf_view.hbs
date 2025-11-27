@@ -12,11 +12,23 @@
     <main>
         <h1>{{title}}</h1>
         <p>{{message}}</p>
-        <p1>{{text}}</p1>
+        
+        {{#each pdfs}}
+            <article class="book">
+                <h2>{{this.title}}</h2>
+                <p>{{this.description}}</p>
+                <li><a href="/pdfs/{{this.filename}}">View PDF</a></li>
+
+            </article>
+            
+        
+        {{/each}}
+        {{#unless pdfs}}
+            <p>No PDFs found.</p>
+        {{/unless}}
         
     </main>
 
     {{> footer}}
 </body>
 </html>
-
