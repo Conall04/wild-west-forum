@@ -21,3 +21,6 @@ How to run:
     2) type -> docker compose build
     3) type -> docker compose up
 
+NOTE: This repo does not contain the actual PDF files. If you download, adn use this repo yourself, 
+you will have to add your own PDF files. Additionally, you will have to change the pdf_metadata.json file,
+so that it reflects the PDF files you use/add.
