@@ -8,7 +8,7 @@ const router = express.Router();
 const users = [];     // { username, password }
 const comments = [];  // { author, text, createdAt }
 
-// Auth helper (same as before)
+// Auth helper
 function requireAuth(req, res, next) {
   if (!req.session.user) {
     return res.redirect('/login');
@@ -19,6 +19,12 @@ function requireAuth(req, res, next) {
 // PDF modules
 const pdf_find_data = require('../modules/pdf_find_data');
 const pdf_validate  = require('../modules/pdf_validate');
+
+// Login
+const { loginUser } = require('../modules/login_user');
+
+// Register
+const { registerUser } = require('../modules/register_user');
 
 
 router.get('/', (req, res) => {
@@ -85,47 +91,72 @@ router.post('/comment', requireAuth, (req, res) => {
   res.redirect('/comments');
 });
 
+
 // Register
 router.get('/register', (req, res) => {
   res.render('register', { title: 'Register' });
 });
 
-router.post('/register', (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).send('Error: Both Username and password required.');
-  }
+router.post('/register', async (req, res) => {
+  const { username, password, email, display_name, profile_color } = req.body;
 
-  const exists = users.some(u => u.username === username);
-  if (exists) {
+  // Basic check
+  if (!username || !password || !email || !display_name) {
     return res.status(400).render('register', {
       title: 'Register',
-      error: 'Username already taken.'
+      error: 'Username, email, password, and display name are required.'
     });
   }
 
-  users.push({ username, password });
+  // Use the SQLite register module
+  const result = await registerUser({
+    username,
+    password,
+    email,
+    displayName: display_name,
+    profileColor: profile_color
+  });
+
+  if (!result.ok) {
+    
+    return res.status(400).render('register', {
+      title: 'Register',
+      error: result.message
+    });
+  }
+
+  // On success, redirect to login
   res.redirect('/login');
 });
+
 
 // Login
 router.get('/login', (req, res) => {
   res.render('login', { title: 'Login' });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (!user) {
-    return res.status(401).render('login', { title: 'Login', error: 'Invalid credentials.' });
+
+  const result = await loginUser({
+    username,
+    password,
+    ipAddress: req.ip
+  });
+
+  if (!result.ok) {
+    return res.status(401).render('login', {
+      title: 'Login',
+      error: result.message
+    });
   }
 
-  req.session.user = username;
-  req.session.sessionId = Math.random().toString(36).slice(2);
-  req.session.expires = new Date(Date.now() + 1000 * 60 * 60);
+  req.session.user = result.user.username;
+  req.session.userUid = result.user.uid;
 
   res.redirect('/comments');
 });
+
 
 // Logout
 router.post('/logout', (req, res) => {

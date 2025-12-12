@@ -3,6 +3,7 @@ const express = require('express');
 const hbs = require('hbs');
 const path = require('path');
 const session = require('express-session');
+const SQLiteStore = require('./modules/sqlite_session_store');
 
 const app = express();
 const PORT = 3210;
@@ -19,9 +20,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 
-// Sessions (intentionally weak/insecure per assignment)
+// Sessions
+const sessionStore = new SQLiteStore({
+  db: path.join(__dirname, 'user-data.db'),
+  table: 'sessions'
+});
+
 app.use(session({
-  secret: 'dev-only',           // not secure; fine for this assignment
+  store: sessionStore,
+  secret: 'your-secret-key',
   resave: false,
   saveUninitialized: false
 }));
@@ -33,7 +40,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 👉 Use the routing module for all app routes
+// Use the routing module for all app routes
 const router = require('./modules/app_routes');
 app.use('/', router);
 
