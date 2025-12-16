@@ -1,12 +1,13 @@
-
-
-
 // server.js
 const express = require('express');
 const hbs = require('hbs');
 const path = require('path');
 const session = require('express-session');
 const SQLiteStore = require('./modules/sqlite_session_store');
+
+// NEW: for Socket.IO
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const PORT = 3210;
@@ -25,7 +26,7 @@ app.use(express.static('public'));
 
 // Sessions
 const sessionStore = new SQLiteStore({
-  db: path.join(__dirname, 'user-data.db'),
+  db: path.join(__dirname,'user-data.db'),
   table: 'sessions'
 });
 
@@ -47,7 +48,18 @@ app.use((req, res, next) => {
 const router = require('./modules/app_routes');
 app.use('/', router);
 
+// NEW: create HTTP server + attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server);
+
+// Simple live chat (broadcast messages to everyone)
+io.on('connection', (socket) => {
+  socket.on('chat:message', (msg) => {
+    io.emit('chat:message', msg);
+  });
+});
+
 // Start the server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Express server running on http://localhost:${PORT}`);
 });

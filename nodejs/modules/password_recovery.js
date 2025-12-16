@@ -7,7 +7,7 @@ const { validatePassword, hashPassword } = require('./password-utils');
 
 // IMPORTANT: keep this path consistent with your other modules.
 // If your real DB lives in /app/database/user-data.db, use this:
-const dbPath = path.join(__dirname, '..', 'user-data.db');
+const dbPath = path.join(__dirname, '..','user-data.db');
 // If yours is actually /app/user-data.db, use this instead:
 // const dbPath = path.join(__dirname, '..', 'user-data.db');
 

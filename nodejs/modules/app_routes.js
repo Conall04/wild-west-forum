@@ -4,10 +4,6 @@ const path = require('path');
 
 const router = express.Router();
 
-// In-memory “database”
-const users = [];     // { username, password }
-const comments = [];  // { author, text, createdAt }
-
 // Auth helper
 function requireAuth(req, res, next) {
   if (!req.session.user) {
@@ -32,6 +28,8 @@ const { getUserByUid, updateDisplayName, updateEmail, updateProfileColor, change
 // Password Recovery
 const { requestPasswordReset, resetPasswordWithToken } = require('../modules/password_recovery');
 
+// Comments DB module
+const { addComment, getRecentComments } = require('../modules/comments_db');
 
 
 
@@ -77,8 +75,10 @@ router.get('/pdfs/:filename', (req, res) => {
   });
 });
 
-// Comments
+// Comments (NOW PERSISTED IN SQLITE)
 router.get('/comments', (req, res) => {
+  const comments = getRecentComments(200);
+
   res.render('comment_list', {
     title: 'Comment Feed',
     message: 'Recent posts',
@@ -92,12 +92,25 @@ router.get('/comment/new', requireAuth, (req, res) => {
 
 router.post('/comment', requireAuth, (req, res) => {
   const { text } = req.body;
-  if (!text) {
-    return res.status(400).send('Text is required.');
+
+  const result = addComment(req.session.userUid, text);
+  if (!result.ok) {
+    return res.status(400).send(result.message);
   }
-  comments.push({ author: req.session.user, text, createdAt: new Date() });
+
   res.redirect('/comments');
 });
+
+// Live chat
+router.get('/chat', requireAuth, (req, res) => {
+  const user = getUserByUid(req.session.userUid)
+  res.render('chat', {
+    title: 'Live Chat',
+    displayname: user.display_name
+  });
+});
+
+
 
 // Profile page---------------------------------
 router.get('/profile', requireAuth, (req, res) => {

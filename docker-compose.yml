@@ -11,6 +11,7 @@ services:
             - SENDGRID_FROM_EMAIL=${SENDGRID_FROM_EMAIL}
             - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
         # No ports exposed - only nginx can access this container
+        
         networks:
             - app-network
 

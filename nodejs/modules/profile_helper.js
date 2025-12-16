@@ -3,7 +3,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const { validatePassword, hashPassword, comparePassword } = require('./password-utils');
 
-const dbPath = path.join(__dirname, '..', 'user-data.db');
+const dbPath = path.join(__dirname, '..','user-data.db');
 const db = new Database(dbPath);
 
 // Ensure users table exists (same schema style as login_user.js)

@@ -5,9 +5,9 @@ const argon2 = require('argon2');
 // These values provide a good balance of security and performance
 const ARGON2_OPTIONS = {
   type: argon2.argon2id,  // Uses a hybrid approach (best for most cases)
-  memoryCost: 65536,      // 64 MB memory cost
+  memoryCost: 16384,      // 64 MB memory cost
   timeCost: 3,            // Number of iterations
-  parallelism: 4          // Number of parallel threads
+  parallelism: 1          // Number of parallel threads
 };
 
 /*
