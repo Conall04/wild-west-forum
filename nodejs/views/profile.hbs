@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type='text/css' href="/style.css">
+    <title>{{title}}</title>
+</head>
+<body>
+    {{> header}}
+
+    <main>
+        <h1>{{title}}</h1>
+
+        {{#if error}}
+            <p class="error">{{error}}</p>
+        {{/if}}
+
+        {{#if message}}
+            <p class="message">{{message}}</p>
+        {{/if}}
+
+        <h2>Your Account</h2>
+        <p><strong>Username:</strong> {{user.username}}</p>
+        <p><strong>Email:</strong> {{user.email}}</p>
+        <p><strong>Display Name:</strong> {{user.display_name}}</p>
+        <p><strong>Profile Color:</strong> {{user.profile_color}}</p>
+
+        <hr>
+
+        <h2>Update Display Name</h2>
+        <form action="/profile/display-name" method="POST">
+            <label>
+                New Display Name
+                <input name="display_name" type="text" required>
+            </label>
+            <button type="submit">Update Display Name</button>
+        </form>
+
+        <hr>
+
+        <h2>Update Email</h2>
+        <form action="/profile/email" method="POST">
+            <label>
+                Current Password
+                <input name="current_password" type="password" required>
+            </label>
+            <label>
+                New Email
+                <input name="email" type="email" required>
+            </label>
+            <button type="submit">Update Email</button>
+        </form>
+
+        <hr>
+
+        <h2>Change Password</h2>
+        <form action="/profile/password" method="POST">
+            <label>
+                Current Password
+                <input name="current_password" type="password" required>
+            </label>
+            <label>
+                New Password
+                <input name="new_password" type="password" required>
+            </label>
+            <label>
+                Confirm New Password
+                <input name="confirm_new_password" type="password" required>
+            </label>
+            <button type="submit">Change Password</button>
+        </form>
+
+        <hr>
+
+        <h2>Profile Color</h2>
+        <form action="/profile/color" method="POST">
+            <label>
+                New Profile Color (hex like #ff0000)
+                <input name="profile_color" type="text" placeholder="#000000" required>
+            </label>
+            <button type="submit">Update Color</button>
+        </form>
+
+    </main>
+
+    {{> footer}}
+</body>
+</html>

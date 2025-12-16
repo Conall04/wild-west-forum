@@ -26,6 +26,14 @@ const { loginUser } = require('../modules/login_user');
 // Register
 const { registerUser } = require('../modules/register_user');
 
+// Profile helper
+const { getUserByUid, updateDisplayName, updateEmail, updateProfileColor, changePasswordAndLogoutAll } = require('../modules/profile_helper');
+
+// Password Recovery
+const { requestPasswordReset, resetPasswordWithToken } = require('../modules/password_recovery');
+
+
+
 
 router.get('/', (req, res) => {
   res.render('home', {
@@ -89,6 +97,102 @@ router.post('/comment', requireAuth, (req, res) => {
   }
   comments.push({ author: req.session.user, text, createdAt: new Date() });
   res.redirect('/comments');
+});
+
+// Profile page---------------------------------
+router.get('/profile', requireAuth, (req, res) => {
+  const user = getUserByUid(req.session.userUid);
+
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+
+  res.render('profile', {
+    title: 'Your Profile',
+    user
+  });
+});
+// Update Display name
+router.post('/profile/display-name', requireAuth, (req, res) => {
+  const result = updateDisplayName(req.session.userUid, req.body.display_name);
+
+  if (!result.ok) {
+    return res.status(400).render('profile', {
+      title: 'Your Profile',
+      error: result.message,
+      user: getUserByUid(req.session.userUid)
+    });
+  }
+
+  res.redirect('/profile');
+});
+
+// Udate Color
+router.post('/profile/color', requireAuth, (req, res) => {
+  const result = updateProfileColor(req.session.userUid, req.body.profile_color);
+
+  if (!result.ok) {
+    return res.status(400).render('profile', {
+      title: 'Your Profile',
+      error: result.message,
+      user: getUserByUid(req.session.userUid)
+    });
+  }
+
+  res.redirect('/profile');
+});
+
+// Forgot Password
+router.get('/forgot-password', (req, res) => {
+    res.render('forgot_password', { title: 'Forgot Password' });
+});
+
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    // baseUrl should match your public site URL (HTTPS in production)
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+    try {
+        await requestPasswordReset({ email, baseUrl });
+    } catch (err) {
+        console.error('forgot-password error:', err.message);
+        // Still don’t reveal anything; show same message
+    }
+
+    res.render('forgot_password', {
+        title: 'Forgot Password',
+        message: 'If that email exists, we sent a password reset link.'
+    });
+});
+
+// Reset Password (page from email link)
+router.get('/reset-password', (req, res) => {
+  const token = req.query.token || '';
+  res.render('reset_password', {
+    title: 'Reset Password',
+    token
+  });
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+
+  const result = await resetPasswordWithToken({
+    token,
+    newPassword: password
+  });
+
+  if (!result.ok) {
+    return res.status(400).render('reset_password', {
+      title: 'Reset Password',
+      token,
+      error: result.message
+    });
+  }
+
+  // success: send them to login
+  res.redirect('/login');
 });
 
 

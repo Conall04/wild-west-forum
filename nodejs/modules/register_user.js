@@ -14,7 +14,9 @@ db.exec(`
     password       TEXT NOT NULL,
     email          TEXT NOT NULL UNIQUE,
     display_name   TEXT NOT NULL,
-    profile_color  TEXT
+    profile_color  TEXT,
+    num_fail INTEGER NOT NULL DEFAULT 0,
+    lockout_until INTEGER
   )
 `);
 
