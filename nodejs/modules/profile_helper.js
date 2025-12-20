@@ -20,7 +20,7 @@ db.exec(`
     )
 `);
 
-// Ensure sessions table exists (so we can invalidate sessions on password change)
+// Ensure sessions table exists
 db.exec(`
     CREATE TABLE IF NOT EXISTS sessions (
         sid TEXT PRIMARY KEY,
@@ -62,7 +62,7 @@ function updateDisplayName(uid, displayName) {
         return { ok: false, message: 'Display name must be 2–30 characters.' };
     }
 
-    // Simple validation: letters/numbers/space/_/-
+    // Simple validation:
     if (!/^[A-Za-z0-9 _-]+$/.test(name)) {
         return { ok: false, message: 'Display name contains invalid characters.' };
     }
@@ -178,17 +178,15 @@ async function updateEmail(uid, currentPassword, newEmail) {
     }
 }
 
-// Helper: delete all sessions for a user (required after password change)
 function deleteAllSessionsForUser(uid) {
     try {
-        // Best case: we store user_uid
+        
         db.prepare(`
             DELETE FROM sessions
             WHERE user_uid = ?
         `).run(uid);
 
-        // Fallback: if user_uid wasn't stored, try to match session JSON
-        // (works if express-session serializes userUid)
+        
         const likeNeedle = `%\"userUid\":${uid}%`;
         db.prepare(`
             DELETE FROM sessions
@@ -199,7 +197,7 @@ function deleteAllSessionsForUser(uid) {
     }
 }
 
-// Change password (requires current password + password rules + hashes + logs out all sessions)
+// Change password. requires current password + password rules + hashes + logs out all sessions
 async function changePasswordAndLogoutAll(uid, currentPassword, newPassword, confirmNewPassword) {
     if (!uid) {
         return { ok: false, message: 'Not logged in.' };
@@ -242,7 +240,6 @@ async function changePasswordAndLogoutAll(uid, currentPassword, newPassword, con
             WHERE uid = ?
         `).run(newHash, uid);
 
-        // Invalidate all existing sessions (requirement)
         deleteAllSessionsForUser(uid);
 
         return { ok: true };

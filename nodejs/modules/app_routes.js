@@ -75,7 +75,7 @@ router.get('/pdfs/:filename', (req, res) => {
   });
 });
 
-// Comments (PAGINATED)
+// Comments
 router.get('/comments', (req, res) => {
   const PAGE_SIZE = 10;
 
@@ -165,7 +165,7 @@ router.get('/profile', requireAuth, (req, res) => {
   const user = getUserByUid(req.session.userUid);
   if (!user) return res.status(404).send('User not found');
 
-  // one-time message (clears itself)
+  // one-time message
   const message = req.session.flashMessage || null;
   const error = req.session.flashError || null;
   req.session.flashMessage = null;
@@ -227,7 +227,7 @@ router.post('/profile/email', requireAuth, async (req, res) => {
     return res.redirect('/profile');
   }
 });
-// Change Password (logs out all sessions)
+// Change Password
 router.post('/profile/password', requireAuth, async (req, res) => {
   const { current_password, new_password, confirm_new_password } = req.body;
 
@@ -246,7 +246,6 @@ router.post('/profile/password', requireAuth, async (req, res) => {
     });
   }
 
-  // Your helper invalidates sessions in DB, now kill this browser session too
   req.session.destroy(() => {
     res.redirect('/login');
   });
@@ -260,14 +259,12 @@ router.get('/forgot-password', (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
 
-    // baseUrl should match your public site URL (HTTPS in production)
     const baseUrl = `${req.protocol}://${req.get('host')}`;
 
     try {
         await requestPasswordReset({ email, baseUrl });
     } catch (err) {
         console.error('forgot-password error:', err.message);
-        // Still don’t reveal anything; show same message
     }
 
     res.render('forgot_password', {
@@ -301,7 +298,6 @@ router.post('/reset-password', async (req, res) => {
     });
   }
 
-  // success: send them to login
   res.redirect('/login');
 });
 

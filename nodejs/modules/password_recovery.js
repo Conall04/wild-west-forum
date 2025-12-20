@@ -5,15 +5,10 @@ const crypto = require('crypto');
 const { sendEmail } = require('./mailer');
 const { validatePassword, hashPassword } = require('./password-utils');
 
-// IMPORTANT: keep this path consistent with your other modules.
-// If your real DB lives in /app/database/user-data.db, use this:
 const dbPath = path.join(__dirname, '..', 'database','user-data.db');
-// If yours is actually /app/user-data.db, use this instead:
-// const dbPath = path.join(__dirname, '..', 'user-data.db');
 
 const db = new Database(dbPath);
 
-// Store only a HASH of the token in DB (safer than plaintext tokens)
 db.exec(`
   CREATE TABLE IF NOT EXISTS password_resets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +29,6 @@ function makeToken() {
   return crypto.randomBytes(32).toString('hex'); // 64 hex chars
 }
 
-// Part 1: request reset (generate token + store + email)
 async function requestPasswordReset({ email, baseUrl }) {
   if (!email) return { ok: true };
 
@@ -80,13 +74,12 @@ If you did not request this, you can ignore this email.`
   return { ok: true };
 }
 
-// Part 2: perform reset using token
+
 async function resetPasswordWithToken({ token, newPassword }) {
   if (!token || !newPassword) {
     return { ok: false, message: 'Missing token or password.' };
   }
 
-  // enforce your password rules
   const pw = validatePassword(newPassword);
   if (!pw.valid) {
     return { ok: false, message: 'Error: ' + pw.errors.join(', ') };
@@ -113,7 +106,7 @@ async function resetPasswordWithToken({ token, newPassword }) {
 
   const newHash = await hashPassword(newPassword);
 
-  // Update user password (and clear lockout/fail counters as a bonus)
+  // Update user password
   db.prepare(`
     UPDATE users
     SET password = ?, num_fail = 0, lockout_until = NULL

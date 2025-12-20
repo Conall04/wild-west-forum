@@ -3,8 +3,6 @@ const Database = require('better-sqlite3');
 const path = require('path');
 
 const MAX_COMMENT_LEN = 1000; 
-// Keep this consistent with your other modules.
-// You are using ../user-data.db in profile_user.js, so match that here.
 const dbPath = path.join(__dirname, '..', 'database', 'user-data.db');
 const db = new Database(dbPath);
 
@@ -56,7 +54,6 @@ function getRecentComments(limit = 100) {
       LIMIT ?
     `).all(limit);
 
-    // Convert timestamp -> readable string for your existing HBS
     return rows.map(r => ({
       author: r.author,
       text: r.text,

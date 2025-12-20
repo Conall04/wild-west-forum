@@ -5,7 +5,7 @@ const path = require('path');
 const session = require('express-session');
 const SQLiteStore = require('./modules/sqlite_session_store');
 
-// NEW: for Socket.IO
+// for Socket.IO
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -48,11 +48,11 @@ app.use((req, res, next) => {
 const router = require('./modules/app_routes');
 app.use('/', router);
 
-// NEW: create HTTP server + attach Socket.IO
+// create HTTP server + attach Socket.IO
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Simple live chat (broadcast messages to everyone)
+// Simple live chat. broadcast messages to everyone
 io.on('connection', (socket) => {
   socket.on('chat:message', (msg) => {
     io.emit('chat:message', msg);

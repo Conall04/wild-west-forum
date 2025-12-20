@@ -7,7 +7,6 @@ class SQLiteStore extends Store {
   constructor(options = {}) {
     super(options);
     
-    // Use provided database or default to user-data.db
     const dbPath = path.join(__dirname, '..', 'database','user-data.db');
     
     this.db = new Database(dbPath);

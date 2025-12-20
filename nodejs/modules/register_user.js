@@ -82,7 +82,6 @@ async function registerUser({ username, password, email, displayName, profileCol
   } catch (err) {
     console.error('registerUser DB error:', err.message);
 
-    // Fallback in case UNIQUE constraint triggers anyway
     if (err.message.includes('UNIQUE') && err.message.includes('username')) {
       return { ok: false, message: 'Error: Username already taken.' };
     }
