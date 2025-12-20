@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type='text/css' href="/style.css">
+  <title>{{title}}</title>
+</head>
+<script>window.CHAT_DISPLAY_NAME={
+  name: "{{displayname}}",
+  color: "{{color}}"
+  }</script>
+<body>
+  {{> header}}
+
+  <main>
+    <h1>{{title}}</h1>
+    <p>Signed in as {{displayname}}</p>
+
+    <span id='chatUser' data-display-name="{{displayname}}" style="display:none"></span>
+
+    <div id="chatBox" style="border:1px solid #ccc; padding:10px; height:300px; overflow:auto;"></div>
+
+    <form id="chatForm">
+      <input id="chatInput" name="text" type="text" placeholder="Type a message..." autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/chat.js"></script>
+
+  {{> footer}}
+</body>
+</html>

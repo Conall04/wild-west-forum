@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+  <title>{{title}}</title>
+</head>
+<body>
+  {{> header}}
+
+  <main>
+    <h1>{{title}}</h1>
+
+    {{#if comment}}
+      <article class="comment">
+        <p><strong>{{comment.author}}</strong> — <em>{{comment.createdAt}}</em></p>
+        <p>{{comment.text}}</p>
+      </article>
+
+      <p><a href="/comments">← Back to comments</a></p>
+    {{else}}
+      <p>Comment not found.</p>
+      <p><a href="/comments">← Back to comments</a></p>
+    {{/if}}
+  </main>
+
+  {{> footer}}
+</body>
+</html>

@@ -18,13 +18,31 @@
       {{#each comments}}
         <article class="comment">
           <p><strong>{{author}}</strong> — <em>{{createdAt}}</em></p>
-          <p>{{text}}</p>
+          <p>
+            {{previewText}}
+            {{#if isTruncated}}
+              <a href="/comment/{{cid}}">Read more</a>
+            {{/if}}
+          </p>
         </article>
         <hr>
       {{/each}}
     {{else}}
       <p>No comments yet.</p>
     {{/if}}
+
+    <hr>
+    <nav class="pagination">
+      {{#if hasPrev}}
+        <a href="/comments?page={{prevPage}}">← Prev</a>
+      {{/if}}
+
+      <span>Page {{page}} of {{totalPages}}</span>
+
+      {{#if hasNext}}
+        <a href="/comments?page={{nextPage}}">Next →</a>
+      {{/if}}
+    </nav>
   </main>
 
   {{> footer}}

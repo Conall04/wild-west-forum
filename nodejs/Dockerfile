@@ -1,5 +1,5 @@
 # Pick a node version, 
-FROM node:lts
+FROM node:20
 
 # Set the working directory inside the container. Think of this as a virtual enviornment.
 WORKDIR /app

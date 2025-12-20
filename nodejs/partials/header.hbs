@@ -8,7 +8,10 @@
             {{#if isLoggedIn}}
                 <!-- When user is logged in -->
                 <li><a href="/comment/new">New Comment</a></li>
+                <li><a href="/chat">Live Chat</a></li>
+                <li><a href="/profile">Profile</a></li>
                 <li><span>Signed in as {{username}}</span></li>
+                
 
                 <!-- Logout is a POST form -->
                 <form action="/logout" method="POST" style="display:inline">

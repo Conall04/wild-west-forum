@@ -3,6 +3,11 @@ const express = require('express');
 const hbs = require('hbs');
 const path = require('path');
 const session = require('express-session');
+const SQLiteStore = require('./modules/sqlite_session_store');
+
+// for Socket.IO
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const PORT = 3210;
@@ -19,9 +24,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 
-// Sessions (intentionally weak/insecure per assignment)
+// Sessions
+const sessionStore = new SQLiteStore({
+  db: path.join(__dirname,'database','user-data.db'),
+  table: 'sessions'
+});
+
 app.use(session({
-  secret: 'dev-only',           // not secure; fine for this assignment
+  store: sessionStore,
+  secret: 'your-secret-key',
   resave: false,
   saveUninitialized: false
 }));
@@ -33,11 +44,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// 👉 Use the routing module for all app routes
+// Use the routing module for all app routes
 const router = require('./modules/app_routes');
 app.use('/', router);
 
+// create HTTP server + attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server);
+
+// Simple live chat. broadcast messages to everyone
+io.on('connection', (socket) => {
+  socket.on('chat:message', (msg) => {
+    io.emit('chat:message', msg);
+  });
+});
+
 // Start the server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Express server running on http://localhost:${PORT}`);
 });

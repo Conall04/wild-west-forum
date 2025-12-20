@@ -1,33 +1,38 @@
 services:
-  # Node.js Express application
-  backend-nodejs:
-    build: ./nodejs
-    container_name: backend-nodejs
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - PORT=3210
-    # No ports exposed - only nginx can access this container
-    networks:
-      - app-network
+    # Node.js Express application
+    backend-nodejs:
+        build: ./nodejs
+        container_name: backend-nodejs
+        restart: unless-stopped
+        environment:
+            - NODE_ENV=${NODE_ENV}
+            - PORT=${PORT}
+            - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+            - SENDGRID_FROM_EMAIL=${SENDGRID_FROM_EMAIL}
+            - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+            - DB_PATH=/database/user-data.db
+        # No ports exposed - only nginx can access this container
+        volumes:
+            - ./nodejs/database:/database
+        
+        networks:
+            - app-network
 
-
-  
-# Nginx Proxy Manager
-  nginx-proxy-manager:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager
-    restart: unless-stopped
-    ports:
-      - '80:80'      # HTTP traffic
-      - '443:443'    # HTTPS traffic
-      - '5001:81'    # Admin web interface, pick an unusual port for security
-    volumes: # place to store all the data that we need persistant and external
-      - ./nginx/data:/data
-      - ./nginx/letsencrypt:/etc/letsencrypt
-    networks:
-      - app-network
+    # Nginx Proxy Manager
+    nginx-proxy-manager:
+        image: 'jc21/nginx-proxy-manager:latest'
+        container_name: nginx-proxy-manager
+        restart: unless-stopped
+        ports:
+            - '80:80'      # HTTP traffic
+            - '443:443'    # HTTPS traffic
+            - '5001:81'    # Admin web interface
+        volumes:
+            - ./nginx/data:/data
+            - ./nginx/letsencrypt:/etc/letsencrypt
+        networks:
+            - app-network
 
 networks:
-  app-network:
-    driver: bridge
+    app-network:
+        driver: bridge
