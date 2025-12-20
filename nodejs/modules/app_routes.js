@@ -29,7 +29,7 @@ const { getUserByUid, updateDisplayName, updateEmail, updateProfileColor, change
 const { requestPasswordReset, resetPasswordWithToken } = require('../modules/password_recovery');
 
 // Comments DB module
-const { addComment, getRecentComments } = require('../modules/comments_db');
+const { addComment, countComments, getCommentsPage, getCommentById } = require('../modules/comments_db');
 
 
 
@@ -75,14 +75,45 @@ router.get('/pdfs/:filename', (req, res) => {
   });
 });
 
-// Comments (NOW PERSISTED IN SQLITE)
+// Comments (PAGINATED)
 router.get('/comments', (req, res) => {
-  const comments = getRecentComments(200);
+  const PAGE_SIZE = 10;
+
+  // page comes from query string: /comments?page=2
+  let page = parseInt(req.query.page, 10);
+  if (!Number.isFinite(page) || page < 1) page = 1;
+
+  const total = countComments();
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // clamp page so /comments?page=999 doesn't break
+  if (page > totalPages) page = totalPages;
+
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const comments = getCommentsPage({ limit: PAGE_SIZE, offset });
+
+  const TRUNCATE_LEN = 10;
+
+  const viewComments = comments.map(c => {
+    const needsTruncate = c.text.length > TRUNCATE_LEN;
+    return {
+      ...c,
+      previewText: needsTruncate ? c.text.slice(0, TRUNCATE_LEN) + '…' : c.text,
+      isTruncated: needsTruncate,
+    };
+  });
 
   res.render('comment_list', {
     title: 'Comment Feed',
     message: 'Recent posts',
-    comments
+    comments: viewComments,
+    page,
+    totalPages,
+    hasPrev: page > 1,
+    hasNext: page < totalPages,
+    prevPage: page - 1,
+    nextPage: page + 1,
   });
 });
 
@@ -100,13 +131,30 @@ router.post('/comment', requireAuth, (req, res) => {
 
   res.redirect('/comments');
 });
+// to see full comment if trunckated
+router.get('/comment/:cid', (req, res) => {
+
+  try{
+    const comment = getCommentById(req.params.cid);
+    if (!comment) return res.status(404).send('Comment not found.');
+
+    res.render('comment_detail', {
+      title: 'Comment',
+      comment
+    });
+  }catch(err){
+    console.error('Get /comment/:cid error:', err)
+    return res.status(500).send('internal server error. (Comment detail)')
+  }
+});
 
 // Live chat
 router.get('/chat', requireAuth, (req, res) => {
   const user = getUserByUid(req.session.userUid)
   res.render('chat', {
     title: 'Live Chat',
-    displayname: user.display_name
+    displayname: user.display_name,
+    color: user.profile_color
   });
 });
 
@@ -115,14 +163,19 @@ router.get('/chat', requireAuth, (req, res) => {
 // Profile page---------------------------------
 router.get('/profile', requireAuth, (req, res) => {
   const user = getUserByUid(req.session.userUid);
+  if (!user) return res.status(404).send('User not found');
 
-  if (!user) {
-    return res.status(404).send('User not found');
-  }
+  // one-time message (clears itself)
+  const message = req.session.flashMessage || null;
+  const error = req.session.flashError || null;
+  req.session.flashMessage = null;
+  req.session.flashError = null;
 
   res.render('profile', {
     title: 'Your Profile',
-    user
+    user,
+    message,
+    error
   });
 });
 // Update Display name
@@ -153,6 +206,50 @@ router.post('/profile/color', requireAuth, (req, res) => {
   }
 
   res.redirect('/profile');
+});
+// Update Email
+router.post('/profile/email', requireAuth, async (req, res) => {
+  try {
+    const { current_password, email } = req.body;
+
+    const result = await updateEmail(req.session.userUid, current_password, email);
+
+    if (!result.ok) {
+      req.session.flashError = result.message;
+      return res.redirect('/profile');
+    }
+
+    req.session.flashMessage = 'Email updated successfully.';
+    return res.redirect('/profile');
+  } catch (err) {
+    console.error('POST /profile/email error:', err);
+    req.session.flashError = 'Server error updating email.';
+    return res.redirect('/profile');
+  }
+});
+// Change Password (logs out all sessions)
+router.post('/profile/password', requireAuth, async (req, res) => {
+  const { current_password, new_password, confirm_new_password } = req.body;
+
+  const result = await changePasswordAndLogoutAll(
+    req.session.userUid,
+    current_password,
+    new_password,
+    confirm_new_password
+  );
+
+  if (!result.ok) {
+    return res.status(400).render('profile', {
+      title: 'Your Profile',
+      error: result.message,
+      user: getUserByUid(req.session.userUid)
+    });
+  }
+
+  // Your helper invalidates sessions in DB, now kill this browser session too
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
 });
 
 // Forgot Password

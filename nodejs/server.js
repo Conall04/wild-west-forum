@@ -26,7 +26,7 @@ app.use(express.static('public'));
 
 // Sessions
 const sessionStore = new SQLiteStore({
-  db: path.join(__dirname,'user-data.db'),
+  db: path.join(__dirname,'database','user-data.db'),
   table: 'sessions'
 });
 

@@ -10,7 +10,10 @@ services:
             - SENDGRID_API_KEY=${SENDGRID_API_KEY}
             - SENDGRID_FROM_EMAIL=${SENDGRID_FROM_EMAIL}
             - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+            - DB_PATH=/database/user-data.db
         # No ports exposed - only nginx can access this container
+        volumes:
+            - ./nodejs/database:/database
         
         networks:
             - app-network

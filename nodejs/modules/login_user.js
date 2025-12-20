@@ -3,7 +3,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const { comparePassword } = require('./password-utils');
 
-const dbPath = path.join(__dirname, '..','user-data.db');
+const dbPath = path.join(__dirname, '..', 'database','user-data.db');
 const db = new Database(dbPath);
 
 const MAX_FAILS  = 5;

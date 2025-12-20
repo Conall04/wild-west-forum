@@ -5,14 +5,24 @@ const chatForm = document.getElementById('chatForm');
 const chatInput = document.getElementById('chatInput');
 
 // Get username from the page text (simple approach)
-const displayname = window.CHAT_DISPLAY_NAME || 'Anonymous'
-function addLine({ author, text, sentAt }) {
+const displayname = window.CHAT_DISPLAY_NAME.name || 'Anonymous'
+const color = window.CHAT_DISPLAY_NAME.color || '#00000'
+function addLine({ author, color, text, sentAt }) {
   const line = document.createElement('div');
   const time = sentAt ? new Date(sentAt).toLocaleTimeString() : '';
-  line.textContent = `[${time}] ${author}: ${text}`;
+
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = author;
+  nameSpan.style.color = color || '#000';
+
+  const textSpan = document.createElement('span');
+  textSpan.textContent = `: ${text}`;
+
+  line.append(`[${time}] `, nameSpan, textSpan);
   chatBox.appendChild(line);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
+
 
 socket.on('chat:message', (msg) => addLine(msg));
 
@@ -23,6 +33,7 @@ chatForm.addEventListener('submit', (e) => {
 
   socket.emit('chat:message', {
     author: displayname,
+    color: color,
     text,
     sentAt: Date.now()
   });
